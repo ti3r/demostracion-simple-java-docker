@@ -1,0 +1,22 @@
+FROM adoptopenjdk:14-openj9 as build
+
+WORKDIR build
+#Copiar los archivos necesarios para compilar, probar, empaquetar
+COPY .mvn ./.mvn
+COPY src ./src
+COPY pom.xml ./pom.xml
+COPY mvnw ./mvnw
+#correr maven
+RUN ./mvnw package
+
+#Empezando la construccion de la imagen final
+FROM adoptopenjdk:14-jre-openj9
+
+LABEL "maintainer"="Alex Blanco" \
+      "cia"="Albiworks"
+
+WORKDIR /app
+
+COPY --from=build /build/target/app.jar ./
+
+CMD ["java", "-jar", "app.jar"]
